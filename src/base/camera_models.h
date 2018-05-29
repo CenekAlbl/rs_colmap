@@ -187,7 +187,6 @@ struct PinholeCameraModel : public BaseCameraModel<PinholeCameraModel> {
   CAMERA_MODEL_DEFINITIONS(1, "PINHOLE", 4)
 };
 
-// Simple camera model with one focal length and one radial distortion
 // parameter.
 //
 // This model is similar to the camera model that VisualSfM uses with the
@@ -216,6 +215,7 @@ struct SimpleRadialCameraModel
 struct RadialCameraModel : public BaseCameraModel<RadialCameraModel> {
   CAMERA_MODEL_DEFINITIONS(3, "RADIAL", 5)
 };
+
 
 // OpenCV camera model.
 //
@@ -332,6 +332,21 @@ struct RadialFisheyeCameraModel
 struct ThinPrismFisheyeCameraModel
     : public BaseCameraModel<ThinPrismFisheyeCameraModel> {
   CAMERA_MODEL_DEFINITIONS(10, "THIN_PRISM_FISHEYE", 12)
+};
+
+
+// Rolling shutter camera model with one focal length and two radial distortion
+// parameters.
+//
+// This model is equivalent to the camera model that Bundler uses
+// (except for an inverse z-axis in the camera coordinate system).
+//
+// Parameter list is expected in the following order:
+//
+//    f, cx, cy, k1, k2
+//
+struct RollingShutterRadialCameraModel : public BaseCameraModel<RollingShutterRadialCameraModel> {
+  CAMERA_MODEL_DEFINITIONS(11, "RADIAL", 11)
 };
 
 // Check whether camera model with given name or identifier exists.
@@ -1411,7 +1426,6 @@ void ThinPrismFisheyeCameraModel::WorldToImage(const T* params, const T u,
   T du, dv;
   Distortion(&params[4], uu, vv, &du, &dv);
   *x = uu + du;
-  *y = vv + dv;
 
   // Transform to image coordinates
   *x = f1 * *x + c1;
