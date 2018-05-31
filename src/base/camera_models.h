@@ -26,6 +26,7 @@
 
 #include <ceres/jet.h>
 
+
 namespace colmap {
 
 // This file defines several different camera models and arbitrary new camera
@@ -343,7 +344,9 @@ struct ThinPrismFisheyeCameraModel
 //
 // Parameter list is expected in the following order:
 //
-//    f, cx, cy, k1, k2
+//    f, cx, cy, k1, k2, w_1, w_2, w_3, t_1, t_2, t_3
+//
+// Where w is the camera rotation and t the camera translation 
 //
 struct RollingShutterRadialCameraModel : public BaseCameraModel<RollingShutterRadialCameraModel> {
   CAMERA_MODEL_DEFINITIONS(11, "RADIAL", 11)
@@ -814,6 +817,76 @@ void RadialCameraModel::ImageToWorld(const T* params, const T x, const T y,
 
 template <typename T>
 void RadialCameraModel::Distortion(const T* extra_params, const T u, const T v,
+                                   T* du, T* dv) {
+  const T k1 = extra_params[0];
+  const T k2 = extra_params[1];
+
+  const T u2 = u * u;
+  const T v2 = v * v;
+  const T r2 = u2 + v2;
+  const T radial = k1 * r2 + k2 * r2 * r2;
+  *du = u * radial;
+  *dv = v * radial;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// RollingShutterRadialCameraModel
+
+std::string RollingShutterRadialCameraModel::InitializeParamsInfo() {
+  return "f, cx, cy, k1, k2, t1, t2, t3, w1, w2, w3";
+}
+
+std::vector<size_t> RollingShutterRadialCameraModel::InitializeFocalLengthIdxs() {
+  return {0};
+}
+
+std::vector<size_t> RollingShutterRadialCameraModel::InitializePrincipalPointIdxs() {
+  return {1, 2};
+}
+
+std::vector<size_t> RollingShutterRadialCameraModel::InitializeExtraParamsIdxs() {
+  return {3, 4, 5, 6 ,7 ,8 ,9 ,10};
+}
+
+std::vector<double> RollingShutterRadialCameraModel::InitializeParams(
+    const double focal_length, const size_t width, const size_t height) {
+  return {focal_length, width / 2.0, height / 2.0, 0, 0, 0 ,0 ,0 ,0 ,0 ,0};
+}
+
+template <typename T>
+void RollingShutterRadialCameraModel::WorldToImage(const T* params, const T u, const T v,
+                                     T* x, T* y) {
+  const T f = params[0];
+  const T c1 = params[1];
+  const T c2 = params[2];
+
+  // Distortion
+  T du, dv;
+  Distortion(&params[3], u, v, &du, &dv);
+  *x = u + du;
+  *y = v + dv;
+
+  // Transform to image coordinates
+  *x = f * *x + c1;
+  *y = f * *y + c2;
+}
+
+template <typename T>
+void RollingShutterRadialCameraModel::ImageToWorld(const T* params, const T x, const T y,
+                                     T* u, T* v) {
+  const T f = params[0];
+  const T c1 = params[1];
+  const T c2 = params[2];
+
+  // Lift points to normalized plane
+  *u = (x - c1) / f;
+  *v = (y - c2) / f;
+
+  IterativeUndistortion(&params[3], u, v);
+}
+
+template <typename T>
+void RollingShutterRadialCameraModel::Distortion(const T* extra_params, const T u, const T v,
                                    T* du, T* dv) {
   const T k1 = extra_params[0];
   const T k2 = extra_params[1];

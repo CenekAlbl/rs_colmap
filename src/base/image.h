@@ -214,6 +214,10 @@ class Image {
   Eigen::Vector4d qvec_;
   Eigen::Vector3d tvec_;
 
+  // The velocities of the camera during the image capture(for Rolling shutter cameras)
+  Eigen::Vector3d tr_vel_vec_;
+  Eigen::Vector3d rot_vel_vec_;
+
   // The pose prior of the image, e.g. extracted from EXIF tags.
   Eigen::Vector4d qvec_prior_;
   Eigen::Vector3d tvec_prior_;
@@ -311,6 +315,24 @@ Eigen::Vector3d& Image::Tvec() { return tvec_; }
 inline double Image::Tvec(const size_t idx) const { return tvec_(idx); }
 
 inline double& Image::Tvec(const size_t idx) { return tvec_(idx); }
+
+
+const Eigen::Vector3d& Image::TrVelVec() const { return tr_vel_vec_; }
+
+Eigen::Vector3d& Image::TrVelVec() { return tr_vel_vec_; }
+
+inline double Image::TrVelVec(const size_t idx) const { return tr_vel_vec_(idx); }
+
+inline double& Image::TrVelVec(const size_t idx) { return tr_vel_vec_(idx); }
+
+const Eigen::Vector3d& Image::RotVelVec() const { return rot_vel_vec_; }
+
+Eigen::Vector3d& Image::RotVelVec() { return rot_vel_vec_; }
+
+inline double Image::RotVelVec(const size_t idx) const { return rot_vel_vec_(idx); }
+
+inline double& Image::RotVelVec(const size_t idx) { return rot_vel_vec_(idx); }
+
 
 void Image::SetTvec(const Eigen::Vector3d& tvec) { tvec_ = tvec; }
 
