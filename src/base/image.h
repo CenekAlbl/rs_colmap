@@ -126,6 +126,21 @@ class Image {
   inline bool HasTvecPrior() const;
   inline void SetTvecPrior(const Eigen::Vector3d& tvec);
 
+  // Access translation velocity vector as (vx, vy, vz) specifying the translational velocity during image capture
+  inline const Eigen::Vector3d& TrVelVec() const;
+  inline Eigen::Vector3d& TrVelVec();
+  inline double TrVelVec(const size_t idx) const;
+  inline double& TrVelVec(const size_t idx);
+  inline void SetTrVelVec(const Eigen::Vector3d& tvec);
+  
+  // Access rotation velocity vector as (wx, wy, wz) specifying the rotational velocity during image capture
+  // as the euler vector
+  inline const Eigen::Vector3d& RotVelVec() const;
+  inline Eigen::Vector3d& RotVelVec();
+  inline double RotVelVec(const size_t idx) const;
+  inline double& RotVelVec(const size_t idx);
+  inline void SetRotVelVec(const Eigen::Vector3d& tvec);
+  
   // Access the coordinates of image points.
   inline const class Point2D& Point2D(const point2D_t point2D_idx) const;
   inline class Point2D& Point2D(const point2D_t point2D_idx);
@@ -325,6 +340,8 @@ inline double Image::TrVelVec(const size_t idx) const { return tr_vel_vec_(idx);
 
 inline double& Image::TrVelVec(const size_t idx) { return tr_vel_vec_(idx); }
 
+void Image::SetTrVelVec(const Eigen::Vector3d& tr_vel_vec) { tr_vel_vec_ = tr_vel_vec; }
+
 const Eigen::Vector3d& Image::RotVelVec() const { return rot_vel_vec_; }
 
 Eigen::Vector3d& Image::RotVelVec() { return rot_vel_vec_; }
@@ -333,6 +350,7 @@ inline double Image::RotVelVec(const size_t idx) const { return rot_vel_vec_(idx
 
 inline double& Image::RotVelVec(const size_t idx) { return rot_vel_vec_(idx); }
 
+void Image::SetRotVelVec(const Eigen::Vector3d& rot_vel_vec) { rot_vel_vec_ = rot_vel_vec; }
 
 void Image::SetTvec(const Eigen::Vector3d& tvec) { tvec_ = tvec; }
 

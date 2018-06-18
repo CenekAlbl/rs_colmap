@@ -330,6 +330,8 @@ void BundleAdjuster::AddImageToProblem(const image_t image_id,
 
   double* qvec_data = image.Qvec().data();
   double* tvec_data = image.Tvec().data();
+  double* tr_vel_vec_data = image.TrVelVec();
+  double* rot_vel_vec_data = image.RotVelVec();
   double* camera_params_data = camera.ParamsData();
 
   const bool constant_pose = config_.HasConstantPose(image_id);
@@ -379,7 +381,7 @@ void BundleAdjuster::AddImageToProblem(const image_t image_id,
       }
 
       problem_->AddResidualBlock(cost_function, loss_function, qvec_data,
-                                 tvec_data, point3D.XYZ().data(),
+                                 tvec_data, tr_vel_vec_data, rot_vel_vec_data, point3D.XYZ().data(),
                                  camera_params_data);
     }
   }
