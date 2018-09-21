@@ -109,6 +109,11 @@ class BundleAdjustmentConfig {
   void SetVariablePose(const image_t image_id);
   bool HasConstantPose(const image_t image_id) const;
 
+    // Set the image to have rs effect and motion.
+    void SetRSPose(const image_t image_id);
+    void SetGSPose(const image_t image_id);
+    bool HasRSPose(const image_t image_id) const;
+
   // Set the translational part of the pose, hence the constant pose
   // indices may be in [0, 1, 2] and must be unique. Note that the
   // corresponding images have to be added prior to calling these methods.
@@ -138,6 +143,7 @@ class BundleAdjustmentConfig {
   std::unordered_set<point3D_t> variable_point3D_ids_;
   std::unordered_set<point3D_t> constant_point3D_ids_;
   std::unordered_set<image_t> constant_poses_;
+    std::unordered_set<image_t> rs_poses_;
   std::unordered_map<image_t, std::vector<int>> constant_tvecs_;
 };
 

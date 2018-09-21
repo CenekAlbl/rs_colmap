@@ -154,6 +154,20 @@ bool BundleAdjustmentConfig::HasConstantPose(const image_t image_id) const {
   return constant_poses_.find(image_id) != constant_poses_.end();
 }
 
+    void BundleAdjustmentConfig::SetRSPose(const image_t image_id) {
+      CHECK(HasImage(image_id));
+      CHECK(!HasConstantTvec(image_id));
+      rs_poses_.insert(image_id);
+    }
+
+    void BundleAdjustmentConfig::SetGSPose(const image_t image_id) {
+      rs_poses_.erase(image_id);
+    }
+
+    bool BundleAdjustmentConfig::HasRSPose(const image_t image_id) const {
+      return rs_poses_.find(image_id) != rs_poses_.end();
+    }
+
 void BundleAdjustmentConfig::SetConstantTvec(const image_t image_id,
                                              const std::vector<int>& idxs) {
   CHECK_GT(idxs.size(), 0);
@@ -330,8 +344,8 @@ void BundleAdjuster::AddImageToProblem(const image_t image_id,
 
   double* qvec_data = image.Qvec().data();
   double* tvec_data = image.Tvec().data();
-  double* tr_vel_vec_data = image.TrVelVec();
-  double* rot_vel_vec_data = image.RotVelVec();
+  double* tr_vel_vec_data = image.TrVelVec().data();
+  double* rot_vel_vec_data = image.RotVelVec().data();
   double* camera_params_data = camera.ParamsData();
 
   const bool constant_pose = config_.HasConstantPose(image_id);
@@ -369,20 +383,30 @@ void BundleAdjuster::AddImageToProblem(const image_t image_id,
                                  point3D.XYZ().data(), camera_params_data);
     } else {
       switch (camera.ModelId()) {
-#define CAMERA_MODEL_CASE(CameraModel)                                   \
-  case CameraModel::kModelId:                                            \
-    cost_function =                                                      \
-        BundleAdjustmentCostFunction<CameraModel>::Create(point2D.XY()); \
+#define CAMERA_MODEL_CASE(CameraModel)                                  \
+  case CameraModel::kModelId:                                           \
+    if(image.HasRS()) {                                                 \
+        cost_function =                                                 \
+            RSBundleAdjustmentCostFunction<CameraModel>::Create(point2D.XY(),camera.RSDirection()); \
+    }else{ \
+        cost_function = \
+                BundleAdjustmentCostFunction<CameraModel>::Create(point2D.XY()); \
+    } \
     break;
-
         CAMERA_MODEL_SWITCH_CASES
 
 #undef CAMERA_MODEL_CASE
       }
 
-      problem_->AddResidualBlock(cost_function, loss_function, qvec_data,
-                                 tvec_data, tr_vel_vec_data, rot_vel_vec_data, point3D.XYZ().data(),
-                                 camera_params_data);
+        if(image.HasRS()) {
+            problem_->AddResidualBlock(cost_function, loss_function, qvec_data,
+                                       tvec_data, point3D.XYZ().data(),
+                                       camera_params_data);
+        }else{
+            problem_->AddResidualBlock(cost_function, loss_function, qvec_data,
+                                       tvec_data, tr_vel_vec_data, rot_vel_vec_data, point3D.XYZ().data(),
+                                       camera_params_data);
+        }
     }
   }
 

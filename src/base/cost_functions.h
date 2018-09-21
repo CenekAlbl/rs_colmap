@@ -144,11 +144,11 @@ public:
     explicit RSBundleAdjustmentCostFunction(const Eigen::Vector2d& point2D, const int direction)
             : x_(point2D(0)), y_(point2D(1)), direction_(direction) {}
 
-    static ceres::CostFunction* Create(const Eigen::Vector2d& point2D) {
+    static ceres::CostFunction* Create(const Eigen::Vector2d& point2D, const int direction) {
       return (new ceres::AutoDiffCostFunction<
-              RSBundleAdjustmentCostFunction<CameraModel>, 2, 4, 3, 3, 3,
+              RSBundleAdjustmentCostFunction<CameraModel>, 2, 4, 3, 3, 3, 3,
               CameraModel::kNumParams>(
-              new RSBundleAdjustmentCostFunction(point2D)));
+              new RSBundleAdjustmentCostFunction(point2D,direction)));
     }
 
     template <typename T>
@@ -157,13 +157,17 @@ public:
                     T* residuals) const {
       // Rotate and translate.
       T projection[3];
-
-      T ray = CameraModel::ImageToWorld(Eigen::Vector2d(x_,y_));
+      T rsd;
+      if(direction_){
+        rsd = T(y_);
+      }else{
+        rsd = T(x_);
+      }
 
       T eax[3];
-      eax[0] = ray[direction]*wvec[0];
-      eax[1] = ray[direction]*wvec[1];
-      eax[2] = ray[direction]*wvec[2];
+      eax[0] = rsd*wvec[0];
+      eax[1] = rsd*wvec[1];
+      eax[2] = rsd*wvec[2];
 
       T temp[3];
 
@@ -171,9 +175,9 @@ public:
 
       ceres::AngleAxisRotatePoint(eax,temp,projection);
 
-      projection[0] += ray[direction]*tvec[0]+Cvec[0];
-      projection[1] += ray[direction]*tvec[1]+Cvec[1];
-      projection[2] += ray[direction]*tvec[2]+Cvec[2];
+      projection[0] += rsd*tvec[0]+Cvec[0];
+      projection[1] += rsd*tvec[1]+Cvec[1];
+      projection[2] += rsd*tvec[2]+Cvec[2];
 
       // Project to image plane.
       projection[0] /= projection[2];

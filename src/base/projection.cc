@@ -99,9 +99,9 @@ Eigen::Vector2d RollingShutterProjectPointToImage(const Eigen::Vector2d& point2D
                                     const Eigen::Vector3d& rot_velocity,
                                     const Eigen::Vector3d& tr_velocity,
                                     const Camera& camera) {
-  const rsd = point2D(camera.getReadoutDirection());
-  const Eigen::Matrix3d Rw = EulerAnglesToRotationMatrix(rsd*rot_velocity(0),rsd*rot_velocity(1),rsd*rot_velocity(2))
-  const Eigen::Matrix3x4d rs_proj_matrix =
+  const int rsd = point2D(camera.RSDirection());
+  const Eigen::Matrix3d Rw = EulerAnglesToRotationMatrix(rsd*rot_velocity(0),rsd*rot_velocity(1),rsd*rot_velocity(2));
+  //const Eigen::Matrix3x4d rs_proj_matrix =
   const Eigen::Vector3d world_point = proj_matrix * point3D.homogeneous();
   return camera.WorldToImage(world_point.hnormalized());
 }

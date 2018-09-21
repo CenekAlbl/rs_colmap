@@ -48,6 +48,9 @@ class Camera {
   inline void SetWidth(const size_t width);
   inline void SetHeight(const size_t height);
 
+	inline int RSDirection() const;
+	inline void SetRSDirection(const int rsd);
+
   // Access focal length parameters.
   double MeanFocalLength() const;
   double FocalLength() const;
@@ -102,16 +105,16 @@ class Camera {
 
   // Check whether camera has bogus parameters.
   bool HasBogusParams(const double min_focal_length_ratio,
-                      const double max_focal_length_ratio,
-                      const double max_extra_param) const;
+					  const double max_focal_length_ratio,
+					  const double max_extra_param) const;
 
   // Initialize parameters for given camera model and focal length, and set
   // the principal point to be the image center.
   void InitializeWithId(const int model_id, const double focal_length,
-                        const size_t width, const size_t height);
+						const size_t width, const size_t height);
   void InitializeWithName(const std::string& model_name,
-                          const double focal_length, const size_t width,
-                          const size_t height);
+						  const double focal_length, const size_t width,
+						  const size_t height);
 
   // Project point in image plane to world / infinity.
   Eigen::Vector2d ImageToWorld(const Eigen::Vector2d& image_point) const;
@@ -139,6 +142,9 @@ class Camera {
   size_t width_;
   size_t height_;
 
+	// Rolling shutter direction
+	int rsd_;
+
   // The focal length, principal point, and extra parameters. If the camera
   // model is not specified, this vector is empty.
   std::vector<double> params_;
@@ -165,6 +171,10 @@ size_t Camera::Height() const { return height_; }
 void Camera::SetWidth(const size_t width) { width_ = width; }
 
 void Camera::SetHeight(const size_t height) { height_ = height; }
+
+	int Camera::RSDirection() const {return rsd_;}
+
+	void Camera::SetRSDirection(const int rsd) {rsd_ = rsd;}
 
 bool Camera::HasPriorFocalLength() const { return prior_focal_length_; }
 

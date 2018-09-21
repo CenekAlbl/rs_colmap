@@ -66,6 +66,10 @@ class Image {
   inline bool IsRegistered() const;
   inline void SetRegistered(const bool registered);
 
+    // Check if image has rolling shutter
+    inline bool HasRS() const;
+    inline void SetRS(const bool hasRS);
+
   // Get the number of image points.
   inline point2D_t NumPoints2D() const;
 
@@ -225,6 +229,9 @@ class Image {
   // where `num_tris > 0`.
   point2D_t num_visible_points3D_;
 
+    // Is the image with RS effect?
+    bool hasRS_;
+
   // The pose of the image, defined as the transformation from world to image.
   Eigen::Vector4d qvec_;
   Eigen::Vector3d tvec_;
@@ -274,6 +281,10 @@ inline bool Image::HasCamera() const { return camera_id_ != kInvalidCameraId; }
 bool Image::IsRegistered() const { return registered_; }
 
 void Image::SetRegistered(const bool registered) { registered_ = registered; }
+
+    bool Image::HasRS() const {return hasRS_;}
+
+    void Image::SetRS(const bool hasRS){ hasRS_ = hasRS;}
 
 point2D_t Image::NumPoints2D() const {
   return static_cast<point2D_t>(points2D_.size());
